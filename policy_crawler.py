@@ -7,26 +7,28 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
-def crawl_policy(url, output_format="json"):
+def crawl_policy_with_selenium(url, output_format="json"):
     try:
         # ChromeDriver 설정
         chrome_options = Options()
         chrome_options.add_argument("--headless")  # 브라우저 창 숨기기
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        service = Service("chromedriver")  # ChromeDriver 경로
+        chrome_options.add_argument("--disable-gpu")
+        service = Service("chromedriver")  # ChromeDriver 경로 (환경에 맞게 수정)
         driver = webdriver.Chrome(service=service, options=chrome_options)
 
-        # URL 접속
+        print(f"Connecting to {url}")
         driver.get(url)
-        time.sleep(2)  # 페이지 로드 대기
+        time.sleep(3)  # 페이지 로드 대기 (필요 시 조정)
 
-        # 개인정보 처리방침 찾기
+        # 개인정보 처리방침 텍스트 추출
         try:
-            policy_element = driver.find_element(By.TAG_NAME, "body")
+            policy_element = driver.find_element(By.TAG_NAME, "body")  # 페이지 전체 텍스트
             policy_text = policy_element.text
+            print("Privacy policy text successfully retrieved.")
         except Exception as e:
-            print(f"Error finding policy: {e}")
+            print(f"Error extracting privacy policy: {e}")
             policy_text = ""
 
         # 크롤링 데이터 저장
@@ -60,4 +62,4 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     url = args[args.index("--url") + 1]
     output_format = args[args.index("--output-format") + 1]
-    crawl_policy(url, output_format)
+    crawl_policy_with_selenium(url, output_format)
